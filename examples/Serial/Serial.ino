@@ -12,7 +12,7 @@ LSB/gauss (where LSB means least significant bit) at this FS setting, so the raw
 reading of 1292 corresponds to 1292 / 6842 = 0.1888 gauss.
 */
 
-#include <Wire.h>
+#include <TwoWire.h>
 #include <LIS3MDL.h>
 
 LIS3MDL mag;
@@ -22,7 +22,7 @@ char report[80];
 void setup()
 {
   Serial.begin(9600);
-  Wire.begin();
+  twMaster.begin();
 
   if (!mag.init())
   {

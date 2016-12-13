@@ -1,5 +1,5 @@
 #include <LIS3MDL.h>
-#include <Wire.h>
+#include <TwoWire.h>
 #include <math.h>
 
 // Defines ////////////////////////////////////////////////////////////////
@@ -118,10 +118,10 @@ void LIS3MDL::enableDefault(void)
 // Writes a mag register
 void LIS3MDL::writeReg(uint8_t reg, uint8_t value)
 {
-  Wire.beginTransmission(address);
-  Wire.write(reg);
-  Wire.write(value);
-  last_status = Wire.endTransmission();
+  twMaster.beginTransmission(address);
+  twMaster.write(reg);
+  twMaster.write(value);
+  last_status = twMaster.endTransmission();
 }
 
 // Reads a mag register
@@ -129,12 +129,12 @@ uint8_t LIS3MDL::readReg(uint8_t reg)
 {
   uint8_t value;
 
-  Wire.beginTransmission(address);
-  Wire.write(reg);
-  last_status = Wire.endTransmission();
-  Wire.requestFrom(address, (uint8_t)1);
-  value = Wire.read();
-  Wire.endTransmission();
+  twMaster.beginTransmission(address);
+  twMaster.write(reg);
+  last_status = twMaster.endTransmission();
+  twMaster.requestFrom(address, (uint8_t)1);
+  value = twMaster.read();
+  twMaster.endTransmission();
 
   return value;
 }
@@ -142,14 +142,14 @@ uint8_t LIS3MDL::readReg(uint8_t reg)
 // Reads the 3 mag channels and stores them in vector m
 void LIS3MDL::read()
 {
-  Wire.beginTransmission(address);
+  twMaster.beginTransmission(address);
   // assert MSB to enable subaddress updating
-  Wire.write(OUT_X_L | 0x80);
-  Wire.endTransmission();
-  Wire.requestFrom(address, (uint8_t)6);
+  twMaster.write(OUT_X_L | 0x80);
+  twMaster.endTransmission();
+  twMaster.requestFrom(address, (uint8_t)6);
 
   uint16_t millis_start = millis();
-  while (Wire.available() < 6)
+  while (twMaster.available() < 6)
   {
     if (io_timeout > 0 && ((uint16_t)millis() - millis_start) > io_timeout)
     {
@@ -158,12 +158,12 @@ void LIS3MDL::read()
     }
   }
 
-  uint8_t xlm = Wire.read();
-  uint8_t xhm = Wire.read();
-  uint8_t ylm = Wire.read();
-  uint8_t yhm = Wire.read();
-  uint8_t zlm = Wire.read();
-  uint8_t zhm = Wire.read();
+  uint8_t xlm = twMaster.read();
+  uint8_t xhm = twMaster.read();
+  uint8_t ylm = twMaster.read();
+  uint8_t yhm = twMaster.read();
+  uint8_t zlm = twMaster.read();
+  uint8_t zhm = twMaster.read();
 
   // combine high and low bytes
   m.x = (int16_t)(xhm << 8 | xlm);
@@ -183,17 +183,17 @@ void LIS3MDL::vector_normalize(vector<float> *a)
 
 int16_t LIS3MDL::testReg(uint8_t address, regAddr reg)
 {
-  Wire.beginTransmission(address);
-  Wire.write((uint8_t)reg);
-  if (Wire.endTransmission() != 0)
+  twMaster.beginTransmission(address);
+  twMaster.write((uint8_t)reg);
+  if (twMaster.endTransmission() != 0)
   {
     return TEST_REG_ERROR;
   }
 
-  Wire.requestFrom(address, (uint8_t)1);
-  if (Wire.available())
+  twMaster.requestFrom(address, (uint8_t)1);
+  if (twMaster.available())
   {
-    return Wire.read();
+    return twMaster.read();
   }
   else
   {

@@ -1,4 +1,4 @@
-#include <Wire.h>
+#include <TwoWire.h>
 #include <LIS3MDL.h>
 
 LIS3MDL mag;
@@ -9,7 +9,7 @@ char report[80];
 void setup()
 {
   Serial.begin(9600);
-  Wire.begin();
+  twMaster.begin();
 
   if (!mag.init())
   {
